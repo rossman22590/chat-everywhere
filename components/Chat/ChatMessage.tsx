@@ -1,6 +1,7 @@
 import { Message } from "@/types";
 import { IconEdit } from "@tabler/icons-react";
 import { FC, useEffect, useRef, useState } from "react";
+import { useTranslation } from "next-i18next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { CodeBlock } from "../Markdown/CodeBlock";
@@ -17,12 +18,8 @@ interface Props {
   onEditMessage: (message: Message, messageIndex: number) => void;
 }
 
-export const ChatMessage: FC<Props> = ({
-  message,
-  messageIndex,
-  lightMode,
-  onEditMessage,
-}) => {
+export const ChatMessage: FC<Props> = ({ message, messageIndex, lightMode, onEditMessage }) => {
+  const { t } = useTranslation('chat');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const [messageContent, setMessageContent] = useState(message.content);
@@ -92,10 +89,7 @@ export const ChatMessage: FC<Props> = ({
       onMouseLeave={() => setIsHovering(false)}
     >
       <div className="text-base gap-4 md:gap-6 md:max-w-2xl lg:max-w-2xl xl:max-w-3xl p-4 md:py-6 flex lg:px-0 m-auto relative">
-        <div className="font-bold min-w-[40px]">
-          {message.role === "assistant" ? "AI:" : "You:"}
-        </div>
-
+        <div className="font-bold min-w-[40px]">{message.role === "assistant" ? t("AI") : t("You")}:</div>
         <div className="prose dark:prose-invert mt-[-2px] w-full">
           {message.role === "user" ? (
             <div className="flex w-full">
