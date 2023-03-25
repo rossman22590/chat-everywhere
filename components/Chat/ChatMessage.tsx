@@ -1,5 +1,5 @@
 import { Message } from "@/types";
-import { IconEdit, IconCopy, IconCheck } from "@tabler/icons-react";
+import { IconEdit } from "@tabler/icons-react";
 import { FC, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
