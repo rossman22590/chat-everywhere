@@ -39,7 +39,9 @@ export const ChatMessage: FC<Props> = ({
   };
 
   const handleEditMessage = () => {
-    onEditMessage({ ...message, content: messageContent }, messageIndex);
+    if (message.content != messageContent) {
+      onEditMessage({ ...message, content: messageContent }, messageIndex);
+    }
     setIsEditing(false);
   };
 
