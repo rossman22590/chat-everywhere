@@ -4,6 +4,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { CodeBlock } from "../Markdown/CodeBlock";
+import removeMarkdown from "remove-markdown";
 
 interface Props {
   message: Message;
@@ -52,7 +53,8 @@ export const ChatMessage: FC<Props> = ({
   const copyOnClick = () => {
     if (!navigator.clipboard) return;
 
-    navigator.clipboard.writeText(messageContent).then(
+    const plainTextContent = removeMarkdown(messageContent);
+    navigator.clipboard.writeText(plainTextContent).then(
       () => {
         setMessageCopied(true);
         setTimeout(() => {
