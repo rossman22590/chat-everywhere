@@ -7,6 +7,7 @@ import { CodeBlock } from "../Markdown/CodeBlock";
 import removeMarkdown from "remove-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import { CopyButton } from "./CopyButton";
 import "katex/dist/katex.min.css";
 
 interface Props {
@@ -158,7 +159,7 @@ export const ChatMessage: FC<Props> = ({
               )}
             </div>
           ) : (
-            <>
+            <div>
               <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex]}
@@ -204,29 +205,14 @@ export const ChatMessage: FC<Props> = ({
               >
                 {message.content}
               </ReactMarkdown>
+
               {(isHovering || window.innerWidth < 640) && (
-                <button
-                  className={`absolute ${
-                    window.innerWidth < 640
-                      ? "right-3 bottom-1"
-                      : "right-[-20px] top-[26px]"
-                  }`}
-                >
-                  {messagedCopied ? (
-                    <IconCheck
-                      size={20}
-                      className="text-green-500 dark:text-green-400"
-                    />
-                  ) : (
-                    <IconCopy
-                      size={20}
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                      onClick={copyOnClick}
-                    />
-                  )}
-                </button>
+                <CopyButton
+                  messagedCopied={messagedCopied}
+                  copyOnClick={copyOnClick}
+                />
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
