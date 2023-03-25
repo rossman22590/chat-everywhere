@@ -1,5 +1,5 @@
 import { Message } from "@/types";
-import { IconEdit } from "@tabler/icons-react";
+import { IconEdit, IconCopy, IconCheck } from "@tabler/icons-react";
 import { FC, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -12,10 +12,16 @@ interface Props {
   onEditMessage: (message: Message, messageIndex: number) => void;
 }
 
-export const ChatMessage: FC<Props> = ({ message, messageIndex, lightMode, onEditMessage }) => {
+export const ChatMessage: FC<Props> = ({
+  message,
+  messageIndex,
+  lightMode,
+  onEditMessage,
+}) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const [messageContent, setMessageContent] = useState(message.content);
+  const [messagedCopied, setMessageCopied] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -43,6 +49,22 @@ export const ChatMessage: FC<Props> = ({ message, messageIndex, lightMode, onEdi
     }
   };
 
+  const copyOnClick = () => {
+    if (!navigator.clipboard) return;
+
+    navigator.clipboard.writeText(messageContent).then(
+      () => {
+        setMessageCopied(true);
+        setTimeout(() => {
+          setMessageCopied(false);
+        }, 2000);
+      },
+      (err) => {
+        console.error("Could not copy text: ", err);
+      }
+    );
+  };
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "inherit";
@@ -52,13 +74,19 @@ export const ChatMessage: FC<Props> = ({ message, messageIndex, lightMode, onEdi
 
   return (
     <div
-      className={`group ${message.role === "assistant" ? "text-gray-800 dark:text-gray-100 border-b border-black/10 dark:border-gray-900/50 bg-gray-50 dark:bg-[#444654]" : "text-gray-800 dark:text-gray-100 border-b border-black/10 dark:border-gray-900/50 bg-white dark:bg-[#343541]"}`}
+      className={`group ${
+        message.role === "assistant"
+          ? "text-gray-800 dark:text-gray-100 border-b border-black/10 dark:border-gray-900/50 bg-gray-50 dark:bg-[#444654]"
+          : "text-gray-800 dark:text-gray-100 border-b border-black/10 dark:border-gray-900/50 bg-white dark:bg-[#343541]"
+      }`}
       style={{ overflowWrap: "anywhere" }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
       <div className="text-base gap-4 md:gap-6 md:max-w-2xl lg:max-w-2xl xl:max-w-3xl p-4 md:py-6 flex lg:px-0 m-auto relative">
-        <div className="font-bold min-w-[40px]">{message.role === "assistant" ? "AI:" : "You:"}</div>
+        <div className="font-bold min-w-[40px]">
+          {message.role === "assistant" ? "AI:" : "You:"}
+        </div>
 
         <div className="prose dark:prose-invert mt-[-2px] w-full">
           {message.role === "user" ? (
@@ -77,7 +105,7 @@ export const ChatMessage: FC<Props> = ({ message, messageIndex, lightMode, onEdi
                       lineHeight: "inherit",
                       padding: "0",
                       margin: "0",
-                      overflow: "hidden"
+                      overflow: "hidden",
                     }}
                   />
 
@@ -101,11 +129,19 @@ export const ChatMessage: FC<Props> = ({ message, messageIndex, lightMode, onEdi
                   </div>
                 </div>
               ) : (
-                <div className="prose dark:prose-invert whitespace-pre-wrap">{message.content}</div>
+                <div className="prose dark:prose-invert whitespace-pre-wrap">
+                  {message.content}
+                </div>
               )}
 
               {(isHovering || window.innerWidth < 640) && !isEditing && (
-                <button className={`absolute ${window.innerWidth < 640 ? "right-3 bottom-1" : "right-[-20px] top-[26px]"}`}>
+                <button
+                  className={`absolute ${
+                    window.innerWidth < 640
+                      ? "right-3 bottom-1"
+                      : "right-[-20px] top-[26px]"
+                  }`}
+                >
                   <IconEdit
                     size={20}
                     className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -115,41 +151,74 @@ export const ChatMessage: FC<Props> = ({ message, messageIndex, lightMode, onEdi
               )}
             </div>
           ) : (
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                code({ node, inline, className, children, ...props }) {
-                  const match = /language-(\w+)/.exec(className || "");
-                  return !inline && match ? (
-                    <CodeBlock
-                      key={Math.random()}
-                      language={match[1]}
-                      value={String(children).replace(/\n$/, "")}
-                      lightMode={lightMode}
-                      {...props}
+            <>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code({ node, inline, className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || "");
+                    return !inline && match ? (
+                      <CodeBlock
+                        key={Math.random()}
+                        language={match[1]}
+                        value={String(children).replace(/\n$/, "")}
+                        lightMode={lightMode}
+                        {...props}
+                      />
+                    ) : (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                  table({ children }) {
+                    return (
+                      <table className="border-collapse border border-black dark:border-white py-1 px-3">
+                        {children}
+                      </table>
+                    );
+                  },
+                  th({ children }) {
+                    return (
+                      <th className="border border-black dark:border-white break-words py-1 px-3 bg-gray-500 text-white">
+                        {children}
+                      </th>
+                    );
+                  },
+                  td({ children }) {
+                    return (
+                      <td className="border border-black dark:border-white break-words py-1 px-3">
+                        {children}
+                      </td>
+                    );
+                  },
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+              {(isHovering || window.innerWidth < 640) && (
+                <button
+                  className={`absolute ${
+                    window.innerWidth < 640
+                      ? "right-3 bottom-1"
+                      : "right-[-20px] top-[26px]"
+                  }`}
+                >
+                  {messagedCopied ? (
+                    <IconCheck
+                      size={20}
+                      className="text-green-500 dark:text-green-400"
                     />
                   ) : (
-                    <code
-                      className={className}
-                      {...props}
-                    >
-                      {children}
-                    </code>
-                  );
-                },
-                table({ children }) {
-                  return <table className="border-collapse border border-black dark:border-white py-1 px-3">{children}</table>;
-                },
-                th({ children }) {
-                  return <th className="border border-black dark:border-white break-words py-1 px-3 bg-gray-500 text-white">{children}</th>;
-                },
-                td({ children }) {
-                  return <td className="border border-black dark:border-white break-words py-1 px-3">{children}</td>;
-                }
-              }}
-            >
-              {message.content}
-            </ReactMarkdown>
+                    <IconCopy
+                      size={20}
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      onClick={copyOnClick}
+                    />
+                  )}
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
