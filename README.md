@@ -1,4 +1,4 @@
-# Chat Everywhere by [Explorator Labs](https://exploratorlabs.com)
+# Chat Everywhere by [Explorator Labs](https://exploratorlabs.com) 
 
 [中文版](https://intro.chateverywhere.app/README-zh.html)
 
